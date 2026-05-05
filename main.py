@@ -1,44 +1,67 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from openai import OpenAI
 import os
-import base64
 
 app = FastAPI()
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Serve frontend UI
 @app.get("/")
 def serve_ui():
     return FileResponse("index.html")
 
-# Optional: health check route
 @app.get("/status")
 def status():
-    return {"status": "AI Brand Generator LIVE"}
+    return {"status": "LIVE"}
 
 @app.post("/generate")
-async def generate(file: UploadFile = File(...)):
-    image_bytes = await file.read()
-    base64_image = base64.b64encode(image_bytes).decode("utf-8")
+async def generate(
+    file: UploadFile = File(...),
+    style: str = Form(...),
+    hat: str = Form(...)
+):
+    await file.read()
+
+    # STYLE PROMPT LOGIC
+    prompt = "professional CEO portrait, high quality"
+
+    if style == "luxury":
+        prompt += ", luxury office, gold tones, cinematic lighting"
+    elif style == "corporate":
+        prompt += ", corporate office, clean background"
+    elif style == "street":
+        prompt += ", modern entrepreneur, urban style"
+
+    if hat == "yes":
+        prompt += ", wearing a stylish hat"
 
     # AI TEXT
     text = client.chat.completions.create(
         model="gpt-5",
         messages=[
-            {"role": "user", "content": "Create a professional CEO bio, tagline, and brand identity."}
+            {"role": "user", "content": f"Create a CEO bio and brand profile for a {style} business leader."}
         ]
     )
 
-    # AI IMAGE
-    image = client.images.generate(
+    # MULTIPLE IMAGES
+    images = []
+    for i in range(3):
+        img = client.images.generate(
+            model="gpt-image-1",
+            prompt=prompt,
+            size="1024x1024"
+        )
+        images.append(img.data[0].url)
+
+    # LOGO GENERATOR (simple)
+    logo = client.images.generate(
         model="gpt-image-1",
-        prompt="professional CEO portrait, suit, luxury office, cinematic lighting",
-        size="1024x1024"
+        prompt="modern corporate logo, BHR Services LLC, minimalist, gold and black",
+        size="512x512"
     )
 
     return {
         "bio": text.choices[0].message.content,
-        "image": image.data[0].url
+        "images": images,
+        "logo": logo.data[0].url
     }
