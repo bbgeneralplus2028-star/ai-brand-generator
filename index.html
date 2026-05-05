@@ -1,24 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AI Brand Generator</title>
+  <title>BHR AI Brand Generator</title>
 </head>
-<body style="font-family:Arial; text-align:center; padding:40px;">
 
-  <h1>BHR AI Brand Generator</h1>
+<body style="font-family:Arial; text-align:center; background:#111; color:#fff; padding:40px;">
 
-  <input type="file" id="fileInput"><br><br>
-  <button onclick="generate()">Generate Brand</button>
+<h1>BHR AI Brand Generator</h1>
 
-  <h3>Result:</h3>
-  <pre id="output"></pre>
-  <img id="img" width="300"/>
+<input type="file" id="file"><br><br>
+
+<select id="style">
+  <option value="corporate">Corporate CEO</option>
+  <option value="luxury">Luxury CEO</option>
+  <option value="street">Modern CEO</option>
+</select><br><br>
+
+<label>Add Hat:</label>
+<select id="hat">
+  <option value="no">No</option>
+  <option value="yes">Yes</option>
+</select><br><br>
+
+<button onclick="generate()">Generate</button>
+
+<h2>Bio</h2>
+<pre id="bio"></pre>
+
+<h2>Images</h2>
+<div id="images"></div>
+
+<h2>Logo</h2>
+<img id="logo" width="150"/>
 
 <script>
-async function generate() {
-  let file = document.getElementById("fileInput").files[0];
+async function generate(){
+  let file = document.getElementById("file").files[0];
+  let style = document.getElementById("style").value;
+  let hat = document.getElementById("hat").value;
+
   let formData = new FormData();
   formData.append("file", file);
+  formData.append("style", style);
+  formData.append("hat", hat);
 
   let res = await fetch("/generate", {
     method: "POST",
@@ -27,8 +51,27 @@ async function generate() {
 
   let data = await res.json();
 
-  document.getElementById("output").innerText = data.bio;
-  document.getElementById("img").src = data.image;
+  document.getElementById("bio").innerText = data.bio;
+
+  let imagesDiv = document.getElementById("images");
+  imagesDiv.innerHTML = "";
+
+  data.images.forEach(url => {
+    let img = document.createElement("img");
+    img.src = url;
+    img.width = 200;
+    img.style.margin = "10px";
+
+    // download button
+    let btn = document.createElement("button");
+    btn.innerText = "Download";
+    btn.onclick = () => window.open(url);
+
+    imagesDiv.appendChild(img);
+    imagesDiv.appendChild(btn);
+  });
+
+  document.getElementById("logo").src = data.logo;
 }
 </script>
 
