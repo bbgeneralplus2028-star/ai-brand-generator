@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import FileResponse
 from openai import OpenAI
 import os
 import base64
@@ -7,8 +8,14 @@ app = FastAPI()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Serve frontend UI
 @app.get("/")
-def home():
+def serve_ui():
+    return FileResponse("index.html")
+
+# Optional: health check route
+@app.get("/status")
+def status():
     return {"status": "AI Brand Generator LIVE"}
 
 @app.post("/generate")
