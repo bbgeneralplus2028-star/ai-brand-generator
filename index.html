@@ -8,24 +8,40 @@
 
 <h1>BHR AI Brand Generator</h1>
 
+<!-- FILE UPLOAD -->
 <input type="file" id="file"><br><br>
 
+<!-- STYLE -->
 <select id="style">
   <option value="corporate">Corporate CEO</option>
   <option value="luxury">Luxury CEO</option>
   <option value="street">Modern CEO</option>
 </select><br><br>
 
+<!-- HAT -->
 <label>Add Hat:</label>
 <select id="hat">
   <option value="no">No</option>
   <option value="yes">Yes</option>
 </select><br><br>
 
+<!-- ENHANCE PHOTO (ADDED) -->
+<label>Enhance Photo:</label>
+<select id="enhance">
+  <option value="no">No</option>
+  <option value="yes">Yes</option>
+</select><br><br>
+
+<!-- BUTTON -->
 <button onclick="generate()">Generate</button>
+
+<hr>
 
 <h2>Bio</h2>
 <pre id="bio"></pre>
+
+<h2>Enhanced Photo</h2>
+<img id="enhanced" width="250"/>
 
 <h2>Images</h2>
 <div id="images"></div>
@@ -38,11 +54,13 @@ async function generate(){
   let file = document.getElementById("file").files[0];
   let style = document.getElementById("style").value;
   let hat = document.getElementById("hat").value;
+  let enhance = document.getElementById("enhance").value; // ✅ ADDED
 
   let formData = new FormData();
   formData.append("file", file);
   formData.append("style", style);
   formData.append("hat", hat);
+  formData.append("enhance", enhance); // ✅ ADDED
 
   let res = await fetch("/generate", {
     method: "POST",
@@ -51,8 +69,15 @@ async function generate(){
 
   let data = await res.json();
 
+  // BIO
   document.getElementById("bio").innerText = data.bio;
 
+  // ENHANCED IMAGE (NEW)
+  if (data.enhanced) {
+    document.getElementById("enhanced").src = data.enhanced;
+  }
+
+  // IMAGES
   let imagesDiv = document.getElementById("images");
   imagesDiv.innerHTML = "";
 
@@ -62,7 +87,6 @@ async function generate(){
     img.width = 200;
     img.style.margin = "10px";
 
-    // download button
     let btn = document.createElement("button");
     btn.innerText = "Download";
     btn.onclick = () => window.open(url);
@@ -71,6 +95,7 @@ async function generate(){
     imagesDiv.appendChild(btn);
   });
 
+  // LOGO
   document.getElementById("logo").src = data.logo;
 }
 </script>
