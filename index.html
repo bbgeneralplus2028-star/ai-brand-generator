@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Brand Generator</title>
+</head>
+<body style="font-family:Arial; text-align:center; padding:40px;">
+
+  <h1>BHR AI Brand Generator</h1>
+
+  <input type="file" id="fileInput"><br><br>
+  <button onclick="generate()">Generate Brand</button>
+
+  <h3>Result:</h3>
+  <pre id="output"></pre>
+  <img id="img" width="300"/>
+
+<script>
+async function generate() {
+  let file = document.getElementById("fileInput").files[0];
+  let formData = new FormData();
+  formData.append("file", file);
+
+  let res = await fetch("/generate", {
+    method: "POST",
+    body: formData
+  });
+
+  let data = await res.json();
+
+  document.getElementById("output").innerText = data.bio;
+  document.getElementById("img").src = data.image;
+}
+</script>
+
+</body>
+</html>
